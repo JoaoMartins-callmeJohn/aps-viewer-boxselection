@@ -6,7 +6,7 @@
 
 An [Autodesk Platform Services](https://aps.autodesk.com) Viewer extension that adds a **Select All in View** button, allowing users to programmatically select every element currently visible in the viewport. The extension wraps the built-in `Autodesk.BoxSelection` extension and provides a UI panel with an option to include or exclude occluded (hidden behind other geometry) elements.
 
-![thumbnail](thumbnail.png)
+
 
 ## Features
 
