@@ -1,165 +1,83 @@
-# Code Sample Guidelines
-
-## GitHub Page
-
-To ensure consistency and discoverability of our code samples on  
-https://github.com/autodesk-platform-services,  
-please follow the conventions explained below.
-
-Also, note that the official **Code Samples** gallery is automatically generated from these GitHub repositories, and it relies on some of these conventions.
-
----
-
-### About Section (Top-Left Corner)
-
-Update the **About** section in the top-left corner with the following information:
-
-- **Description** – short description of the code sample (used by the gallery)
-- **Website** – where applicable, include a link to live demo (used by the gallery)
-- **Topics** – provide topics relevant to the code sample
-
----
-
-### Topics
-
-#### Type of repository
-
-- `sample`
-- `sdk`
-
-> Only repos with the `sample` topic are included in the gallery.
-
----
-
-#### Programming language
-
-- `nodejs`
-- `csharp`
-- `java`
-- `go`
-- `php`
-- `python`
-
-> Used for filtering in the gallery.
-
----
-
-#### APS services and components
-
-- `autodesk-data-management`
-- `autodesk-model-derivative`
-- `autodesk-reality-capture`
-- `autodesk-design-automation` (formerly `autodesk-designautomation`)
-- `autodesk-webhook`
-- `autodesk-bim360`
-- `autodesk-construction-cloud`
-- `autodesk-data-exchange`
-- `autodesk-aec-data-model`
-- `autodesk-mfg-data-model`
-- `autodesk-viewer`
-
-> Used for filtering in the gallery.
-
----
-
-#### Design Automation engines
-
-- `autodesk-autocad`
-- `autodesk-revit`
-- `autodesk-inventor`
-- `autodesk-3dsmax`
-
----
-
-#### Other technologies
-
-- `express`
-- `aspnet`
-- `react`
-- `graphql`
-- etc.
-
-> Follow suggestions provided by GitHub.
-
----
-
-## README
-
-Make sure the `README.md` file contains the following:
-
-### 1. Level-1 header with a title  
-(Required by the gallery)
-
-Example:
-# My Sample App
-
-### 2. Badges for supported platforms, runtime versions, and license
-
-Example badge markup:
+# APS Viewer - Box Selection
 
 ![platforms](https://img.shields.io/badge/platform-windows%20%7C%20osx%20%7C%20linux-lightgray.svg)
-[![.net](https://img.shields.io/badge/net-6.0-blue.svg)](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
-[![node.js](https://img.shields.io/badge/Node.js-20.13-blue.svg)](https://nodejs.org)
-[![npm](https://img.shields.io/badge/npm-10.5-blue.svg)](https://www.npmjs.com/)
+[![viewer](https://img.shields.io/badge/Viewer-v7-blue.svg)](https://aps.autodesk.com/en/docs/viewer/v7)
 [![license](https://img.shields.io/:license-mit-green.svg)](https://opensource.org/licenses/MIT)
 
+An [Autodesk Platform Services](https://aps.autodesk.com) Viewer extension that adds a **Select All in View** button, allowing users to programmatically select every element currently visible in the viewport. The extension wraps the built-in `Autodesk.BoxSelection` extension and provides a UI panel with an option to include or exclude occluded (hidden behind other geometry) elements.
 
----
+![thumbnail](thumbnail.png)
 
-### 3. Description of the code sample
+## Features
 
-More detailed than the short description in the **About** section.
+- **Select All in View** — one-click selection of every element visible in the current camera frustum.
+- **Include / Exclude Occluded Elements** — toggle whether elements hidden behind other geometry are included in the selection. When enabled, the selection uses geometric intersection rather than pixel-based visibility.
+- **Custom Toolbar Button & Docking Panel** — integrates seamlessly into the Viewer toolbar with a panel that can be dragged and toggled.
 
----
+## How It Works
 
-### 4. Thumbnail (Required by the gallery)
+The extension uses the built-in `Autodesk.BoxSelection` extension under the hood. When the user clicks **Select All in View**, it:
 
-- Must be stored in the root folder of the repo
-- Named either:
-  - `thumbnail.png`
-  - `thumbnail.gif`
-- Aspect ratio: 16:9
-- Ideally no more than 200kB
-
----
+1. Loads (or reloads) `Autodesk.BoxSelection` with the current `useGeometricIntersection` setting.
+2. Sets the box selection tool's start and end points to cover the entire canvas.
+3. Retrieves the resulting selection and applies it to the viewer.
 
 ## Usage
 
-If there is a live demo, include description of how it can be used, or a demonstration video.
-
----
+1. Load a model in the Viewer.
+2. Click the **Select All in View** toolbar button to open the panel.
+3. Toggle **Include occluded elements** on or off depending on whether you want to select hidden geometry.
+4. Click **Select All in View** in the panel to select all matching elements.
 
 ## Development
 
-Include:
-
 ### Prerequisites
 
-For example:
+- [APS application credentials](https://aps.autodesk.com/en/docs/oauth/v2/tutorials/create-app/) (or an access token endpoint)
+- A URN of a model translated via the [Model Derivative](https://aps.autodesk.com/en/docs/model-derivative/v2) service
+- A web browser with JavaScript enabled
+- A static file server (e.g., VS Code Live Server, `npx serve`, Python `http.server`)
 
-- APS app credentials
-- Provisioned access to ACC
-- Node.js or .NET runtime
-- bash terminal
+### Running Locally
 
----
+1. Clone this repository:
 
-### Steps to build and run the sample locally
+    ```bash
+    git clone https://github.com/autodesk-platform-services/aps-viewer-boxselection.git
+    cd aps-viewer-boxselection
+    ```
 
----
+2. Update `index.html` with your own access token endpoint and model URN. Replace the `getToken()` function with your token retrieval logic, and update the URN passed to `initAPSViewer()` in the `<body onload="...">` attribute.
 
-Where applicable, include additional information such as:
+3. Serve the files with any static HTTP server. For example:
 
-- Deployment steps
-- Known limitations
-- Troubleshooting
-- Tips & tricks
-- Additional links to documentation and/or support
+    ```bash
+    npx serve .
+    ```
 
----
+4. Open the served URL in your browser.
+
+### Using the Extension in Your Own Project
+
+1. Include the Viewer library and the extension script:
+
+    ```html
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
+    <script src="BoxSelectionExtension.js"></script>
+    ```
+
+2. Register the extension when initializing the Viewer:
+
+    ```javascript
+    const config = { extensions: ['BoxSelectionExtension'] };
+    const viewer = new Autodesk.Viewing.GuiViewer3D(container, config);
+    ```
+
+## Known Limitations
+
+- The extension uses the full canvas bounding rect for selection, so results depend on the current camera position and zoom level.
+- Occluded element detection relies on `Autodesk.BoxSelection`'s `useGeometricIntersection` option, which may have performance implications on very large models.
 
 ## License
 
-All samples must use the **MIT license**.
-
-Include a `LICENSE` file in the repository as well.
+This sample is licensed under the terms of the [MIT License](LICENSE). Refer to the `LICENSE` file for more details.
